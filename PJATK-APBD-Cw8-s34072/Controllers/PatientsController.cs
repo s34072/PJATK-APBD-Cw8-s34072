@@ -97,7 +97,6 @@ public class PatientsController : ControllerBase
             return NotFound($"Pacjent o numerze PESEL {pesel} nie istnieje w bazie danych.");
         }
 
-        // Pozbywamy się DateTime.MaxValue i sprawdzamy nulle bezpośrednio w LINQ
         bool isRequestToNull = !request.To.HasValue;
         DateTime requestToValue = request.To ?? DateTime.MinValue;
 
@@ -107,7 +106,6 @@ public class PatientsController : ControllerBase
             .ThenInclude(r => r.Ward)
             .Where(b => b.BedType.Name == request.BedType && b.Room.Ward.Name == request.Ward)
             .Where(b => !b.BedAssignments.Any(ba =>
-                // Logika sprawdzająca nakładanie się dat (bez wysyłania MaxValue do SQL Servera)
                 (isRequestToNull || ba.From < requestToValue) && 
                 (ba.To == null || request.From < ba.To)))
             .FirstOrDefaultAsync();
